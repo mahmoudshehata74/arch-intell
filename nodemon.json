@@ -1,0 +1,10 @@
+{
+    "env": {
+        "MONGO_USER": "saleh",
+        "MONGO_PASSWORD": "xtyFcrNrX9fwFV3m",
+        "MONGO_DB": "archintell",
+        "SECRET_KEY": "somesupersecretkey",
+        "PIXLR_API_SECRET": "c566f6d1145149cea16d2004e01a8a2a",
+        "PIXLR_API_KEY": "65e0d230cb72d48cf3fb73c9"
+    }
+}

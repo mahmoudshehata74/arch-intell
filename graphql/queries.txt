@@ -1,0 +1,372 @@
+query des{
+  designs{
+    _id
+    title
+    description
+    model_type
+    outputUrl2D
+    outputUrl3D
+    creator {
+      _id
+      username
+      email
+      image
+    comments {
+      _id
+      comment
+      username
+      createdAt
+    }
+    likes {
+      id
+      createdAt
+      username
+    }
+    createdAt
+
+  }
+}
+}
+
+
+mutation createDes{
+createDesign(designInput:{model_type:"3D",title:"a5erann",description:"lakdha wrew wr remna"}){
+_id
+title
+description
+model_type
+outputUrl2D
+outputUrl3D
+creator {
+_id
+username
+email
+image
+}
+comments {
+_id
+comment
+username
+createdAt
+}
+likes {
+id
+createdAt
+username
+}
+createdAt
+
+}
+}
+
+query searchDesignTitle{
+  searchDesignTitle(title:"hoo"){
+    _id
+    title
+    description
+    model_type
+    outputUrl2D
+    outputUrl3D
+    creator {
+      _id
+    }
+    comments {
+      _id
+      comment
+      username
+      createdAt
+    }
+    likes {
+      id
+      createdAt
+      username
+    }
+    createdAt
+
+  }
+}
+
+query searchDesignId{
+  searchDesignId(designId:"65d3a90e7844ed3f154ea3bb"){
+    _id
+    title
+    description
+    model_type
+    outputUrl2D
+    outputUrl3D
+    creator {
+      _id
+      username
+      email
+      image
+    }
+    comments {
+      _id
+      comment
+      username
+      createdAt
+    }
+    likes {
+      id
+      createdAt
+      username
+    }
+    createdAt
+
+  }
+}
+
+query {
+  createdDesigns(userId: "6646cfe8ca0e77843754c142") {
+      _id
+    title
+    description
+    model_type
+    outputUrl2D
+    outputUrl3D
+    creator {
+      _id
+      username
+      email
+      image
+    }
+    comments {
+      _id
+      comment
+      username
+      createdAt
+    }
+    likes {
+      id
+      createdAt
+      username
+    }
+    createdAt
+
+  }
+}
+
+
+mutation deletDesign{
+  deletDesign(designId:"65d15c03a0ce078bfac76081"){
+      _id
+    title
+    description
+    model_type
+    outputUrl2D
+    outputUrl3D
+    creator {
+      _id
+      username
+      email
+      image
+    }
+    comments {
+      _id
+      comment
+      username
+      createdAt
+    }
+    likes {
+      id
+      createdAt
+      username
+    }
+    createdAt
+  }
+}
+
+query log {
+  login(email:"hawary@cs.com",password:"123456"){
+    userId
+    token
+    username
+  }
+}
+
+mutation createUser{
+  createUser(userInput:{username:"shehata",email:"shehata@cs.com",password:"123456"}){
+    _id
+    username
+    email
+  }
+}
+
+mutation editDesign{
+  editDesign(description: "rooo"){
+        _id
+    title
+    description
+    model_type
+    outputUrl2D
+    outputUrl3D
+    creator {
+      _id
+      username
+      email
+      image
+    }
+    comments {
+      _id
+      comment
+      username
+      createdAt
+    }
+    likes {
+      id
+      createdAt
+      username
+    }
+    createdAt
+  }
+}
+
+
+
+mutation uploadProfilePhoto{
+  uploadProfilePhoto(userId:"65d3a90e7844ed3f154ea3bb",photo:"https://media0035.elcinema.com/uploads/_315x420_7a2d72944feca16407d1fbe516bb7389060c17b0a59b970a077231a42207b136.jpg"){
+   _id
+   username
+   email
+   image
+   createdDesigns{
+    _id
+   }
+  }
+}
+
+
+mutation follow
+{
+  followUser(userId:"65d3a90e7844ed3f154ea3bb"){
+    _id
+    username
+    email
+    image
+    createdDesigns{
+      _id
+    }
+  }
+}
+
+
+mutation unfollow
+{
+  unFollowUser(userId:"65d3a90e7844ed3f154ea3bb"){
+    _id
+    username
+    email
+    image
+    createdDesigns{
+      _id
+    }
+  }
+}
+
+query followers{
+  followers(userID:"65d242196a5215d273d503e9"){
+    _id
+    username
+    email
+    image
+    createdDesigns{
+      _id
+    }
+  }
+}
+
+query followings{
+  followings(userID:"65d242196a5215d273d503e9"){
+    _id
+    username
+    email
+    image
+    createdDesigns{
+      _id
+    }
+  }
+}
+
+
+
+query users{
+  users{
+    _id
+    username
+    email
+    image
+    createdDesigns{
+      _id
+    }
+    followings{
+      _id
+    }
+    followers {
+      _id
+    }
+  }
+}
+
+mutation likeDesign{
+  likeDesign(designId:"65d15c22a0ce078bfac76083"){
+    likes {
+      createdAt
+      username
+    }
+  }
+}
+
+
+mutation unLikeDesign{
+  unLikeDesign(designId:"65d15c22a0ce078bfac76083"){
+    likes {
+      createdAt
+      username
+    }
+  }
+}
+
+
+
+
+mutation comment {
+  addComment(designId:"65d15c22a0ce078bfac76083", comment:"wowww") {
+   comments {
+      _id
+      comment
+      username
+      createdAt
+    }
+  }
+}
+
+mutation deleteComment {
+  deleteComment(designId:"65e400d712d652b3514f76d6", commentId:"65e405ac964f6c694366a951") {
+    comments {
+        _id
+        comment
+        username
+        createdAt
+      }
+  }
+}
+
+query searchUser {
+  searchUser(userName:"saleh") {
+    _id
+    username  
+    email
+    createdDesigns{
+      _id
+    }
+    image
+    followings{
+      _id
+    }
+    followers {
+      _id
+    }
+  }
+}
+
+

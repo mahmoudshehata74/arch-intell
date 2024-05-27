@@ -1,0 +1,89 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Form Example</title>
+</head>
+<body>
+  <form id="designForm">
+    <input type="text" name="model_type" placeholder="Model Type" required>
+    <input type="text" name="title" placeholder="Title" required>
+    <input type="text" name="description" placeholder="Description" required>
+    <button type="submit">Create Design</button>
+  </form>
+
+  <script src="node_modules/apollo-client/bundle.umd.js"></script>
+  <script src="node_modules/apollo-link-http/bundle.umd.js"></script>
+  <script src="node_modules/graphql/graphql.min.js"></script>
+  <script src="node_modules/apollo-boost/bundle.umd.js"></script>
+
+  <script>
+    // Configure Apollo Client with the GraphQL server's URL
+    const httpLink = new ApolloLinkHttp({ uri: 'http://localhost:9565/graphql' });
+
+    // Create an Apollo Client instance
+    const client = new ApolloClient({ link: httpLink });
+
+    // Handle form submission
+    document.getElementById('designForm').addEventListener('submit', event => {
+      event.preventDefault();
+
+      // Collect form field values
+      const form = event.target;
+      const modelType = form.elements.model_type.value;
+      const title = form.elements.title.value;
+      const description = form.elements.description.value;
+
+      // Construct the mutation request
+      const mutation = gql`
+        
+          createDesign(designInput: $designInput) {
+            _id
+            title
+            description
+            outputUrl2D
+            outputUrl3D
+            creator {
+              username
+              _id
+            }
+            comments {
+              _id
+              comment
+              username
+              createdAt
+            }
+            likes {
+              id
+              createdAt
+              username
+            }
+            createdAt
+          }
+        
+      `;
+
+      // Send the mutation request to the server
+      client.mutate({
+        mutation,
+        variables: {
+          designInput: {
+            model_type: modelType,
+            title: title,
+            description: description
+          }
+        }
+      })
+      .then(response => {
+        // Handle the response from the server
+        console.log('Design created:', response.data.createDesign);
+        // Additional logic here
+      })
+      .catch(error => {
+        // Handle any errors
+        console.error('Error creating design:', error);
+      });
+    });
+  </script>
+</body>
+</html>
