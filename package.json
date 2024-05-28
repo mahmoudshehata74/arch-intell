@@ -29,8 +29,6 @@
     "mongoose": "^8.1.2",
     "multer": "^1.4.5-lts.1",
     "node-fetch": "^3.3.2",
-    "onnxjs": "^0.1.8",
-    "openai": "^4.28.4",
     "react-chatbot-kit": "^2.2.2",
     "torch": "^0.2.7"
   },
