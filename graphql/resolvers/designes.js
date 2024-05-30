@@ -97,83 +97,85 @@ const getUsers = async (userIds) => {
 
 
 module.exports = {
-  createDesign: async (args, req) => {
-    if (!req.isAuth) {
-      throw new Error('Unauthenticated!');
-    }
-
-    const { designInput } = args;
-
-    let description = designInput.description
-    let modelType = designInput.model_type
-    // Function to execute the Python script
-    function runPythonScript(description) {
-      return new Promise((resolve, reject) => {
-        // Execute the Python script
-        const command = `python generatorsModels/txtTOimg.py ${description} ${modelType}`;
-        exec(command, (error, stdout, stderr) => {
-          if (error) {
-            reject(error);
-          } else {
-            resolve(stdout);
-          }
-        });
-      });
-    }
-    async function main() {
-      try {
-        const output = await runPythonScript(description,modelType);
-        // console.log(description); 
-        console.log("runPy \n"+output);
-        return output;
-      } catch (error) {
-        console.error(error);
-      }
-    }
-
-    const model_type = designInput.model_type.toString().trim();
-    // console.log(model_type);
-    // const l = model_type.length;
-    // console.log(l);
-
-    const result = await main();
-    const trimmedOutput = result.trim();
-
-    const design = new Design({
-      title: designInput.title,
-      description: designInput.description,
-      creator: req.userId,
-      createdAt: new Date().toISOString(),
-      model_type: designInput.model_type,
-      outputUrl2D: model_type === "2D" ? trimmedOutput : null,
-      outputUrl3D: model_type === "3D" ? trimmedOutput : null,
-    });
-
-    let createdDesigns;
-    try {
-      const results = await design.save();
-      console.log(`Design created by : ${req.username}`);
-      // console.log("design created");
-
-      createdDesigns = transformDesign(results);
-      const creator = await User.findById(req.userId);
-
-      if (!creator) {
-        throw new Error('User not found.');
-      }
-      creator.createdDesigns.push(transformUser(results));
-      creator.username = req.username;
-      await creator.save();
-      // console.log(`Designs created : ${createdDesigns}`);
   
-      return createdDesigns;
-
-    } catch (err) {
-      console.log(err);
-      throw err;
-    }
-  },
-
+  createDesign: async (args, req) => {
+      if (!req.isAuth) {
+          throw new Error('Unauthenticated!');
+      }
+  
+      const { designInput } = args;
+      const description = designInput.description;
+      const modelType = designInput.model_type;
+  
+      // Function to execute the Python script
+      function runPythonScript(modelType, description) {
+          return new Promise((resolve, reject) => {
+              // Escape the arguments to avoid injection issues and handle spaces correctly
+              const command = `python generatorsModels/txtTOimg.py "${modelType}" "${description.replace(/"/g, '\\"')}"`;
+              const options = { maxBuffer: 1024 * 1024 * 5 }; // 5MB buffer
+              exec(command, options, (error, stdout, stderr) => {
+                  if (error) {
+                      reject(error);
+                  } else {
+                      if (stderr) {
+                          console.error(`stderr: ${stderr}`);
+                      }
+                      resolve(stdout);
+                  }
+              });
+          });
+      }
+  
+      async function main() {
+          try {
+              const output = await runPythonScript(modelType, description);
+              console.log("runPy output:\n", output);
+              return output;
+          } catch (error) {
+              console.error(error);
+              return null;
+          }
+      }
+  
+      const result = await main();
+      if (!result) {
+          throw new Error('No output from Python script');
+      }
+      const trimmedOutput = result.trim();
+  
+      const design = new Design({
+          title: designInput.title,
+          description: designInput.description,
+          creator: req.userId,
+          createdAt: new Date().toISOString(),
+          model_type: designInput.model_type,
+          outputUrl2D: modelType === "2D" ? trimmedOutput : null,
+          outputUrl3D: modelType === "3D" ? trimmedOutput : null,
+      });
+  
+      try {
+          const results = await design.save();
+          console.log(`Design created by: ${req.username}`);
+  
+          const createdDesigns = transformDesign(results);
+          const creator = await User.findById(req.userId);
+  
+          if (!creator) {
+              throw new Error('User not found.');
+          }
+          creator.createdDesigns.push(transformUser(results));
+          creator.username = req.username;
+          await creator.save();
+  
+          return createdDesigns;
+  
+      } catch (err) {
+          console.log(err);
+          throw err;
+      }
+  }
+  
+  ,
   editDesign: async ({ req , description }) => {
     // if (!req.isAuth) {
     //   throw new Error('Unauthenticated!');
@@ -182,16 +184,23 @@ module.exports = {
     const lastInsertedDesign = await Design.findOne().sort({ createdAt: -1 });
     const path2D = lastInsertedDesign.outputUrl3D;
     const path3D = lastInsertedDesign.outputUrl2D;
+
+
+
+
+
     if (path2D == null){
       const title = lastInsertedDesign.title;
       const desc = lastInsertedDesign.description;
 
       // const path = " 2D imge path"
 
-      function runPythonScript3D(description, path2D) {
+      function runPythonScript2D(description, path2D ) {
         return new Promise((resolve, reject) => {
           const command = `python generatorsModels/imgTOimg.py "${description}" "${path2D}"`; 
-          exec(command, (error, stdout, stderr) => {
+          const options = { maxBuffer: 1024 * 1024 * 5 }; // 5MB buffer
+
+          exec(command,options, (error, stdout, stderr) => {
             if (error) {
               reject(error);
             } else {
@@ -200,9 +209,9 @@ module.exports = {
           });
         });
       }
-      async function main3D() {
+      async function main2D() {
         try {
-          const output = await runPythonScript3D(description, path2D);
+          const output = await runPythonScript2D(description, path2D);
           console.log(description);
           console.log(path2D);
           console.log(output);
@@ -213,7 +222,10 @@ module.exports = {
       }
 
 
-      const result3D = await main3D();
+      const result3D = await main2D();
+      if (!result3D) {
+        throw new Error('No output from Python script');
+    }
       const trimmedOutput3D = result3D.trim();
 
       const design = new Design({
@@ -240,7 +252,9 @@ module.exports = {
       function runPythonScript3D(description, path3D) {
         return new Promise((resolve, reject) => {
           const command = `python generatorsModels/imgTOimg.py "${description}" "${path3D}"`; 
-          exec(command, (error, stdout, stderr) => {
+          const options = { maxBuffer: 1024 * 1024 * 5 }; // 5MB buffer
+
+          exec(command,options, (error, stdout, stderr) => {
             if (error) {
               reject(error);
             } else {
@@ -263,6 +277,9 @@ module.exports = {
 
 
       const result3D = await main3D();
+      if (!result3D) {
+        throw new Error('No output from Python script');
+    }
       const trimmedOutput3D = result3D.trim();
 
       const design = new Design({
@@ -279,27 +296,91 @@ module.exports = {
         return createdDesigns;
 }
 
-    // let createdDesigns;
-    // try {
-    //   const result = await design.save();
-    //   console.log("design edited");
-
-    //   createdDesigns = transformDesign(result);
-    //   const creator = await User.findById(req.userId);
-
-    //   if (!creator) {
-    //     throw new Error('User not found.');
-    //   }
-    //   creator.createdDesigns.push(design);
-    //   creator.username = req.username;
-    //   await creator.save();
-    //   return createdDesigns;
-    // } catch (err) {
-    //   console.log(err);
-    //   throw err;
-    // }
-
   },
+
+
+
+  // editDesign : async ({ req, userId, description }) => {
+  //   // Uncomment the following lines if authentication is needed
+  //   // if (!req.isAuth) {
+  //   //   throw new Error('Unauthenticated!');
+  //   // }
+  
+  //   try {
+  //     // Find the user by ID and populate their createdDesigns
+  //     const user = await User.findById(userId).populate({
+  //       path: 'createdDesigns',
+  //       options: {
+  //         sort: { createdAt: -1 }, // Sort by creation date in descending order
+  //         limit: 1, // We only need the most recent design
+  //       }
+  //     });
+  
+  //     if (!user) {
+  //       throw new Error('User not found');
+  //     }
+  
+  //     if (user.createdDesigns.length === 0) {
+  //       throw new Error('No designs found for this user');
+  //     }
+  
+  //     // Get the most recent design
+  //     const lastInsertedDesign = user.createdDesigns[0];
+  //     let path2D = lastInsertedDesign.outputUrl3D;
+  //     let path3D = lastInsertedDesign.outputUrl2D;
+  
+  //     const title = lastInsertedDesign.title;
+  //     const desc = lastInsertedDesign.description;
+  
+  //     // Helper function to run a Python script
+  //     function runPythonScript(description, outputPath) {
+  //       return new Promise((resolve, reject) => {
+  //         const command = `python generatorsModels/imgTOimg.py "${description}" "${outputPath}"`;
+  //         const options = { maxBuffer: 1024 * 1024 * 5 }; // 5MB buffer
+  
+  //         exec(command, options, (error, stdout, stderr) => {
+  //           if (error) {
+  //             reject(error);
+  //           } else {
+  //             resolve(stdout);
+  //           }
+  //         });
+  //       });
+  //     }
+  
+  //     // If path2D is null, generate it using the Python script
+  //     if (!path2D) {
+  //       const result2D = await runPythonScript(description, path2D);
+  //       if (!result2D) {
+  //         throw new Error('No output from Python script for 2D');
+  //       }
+  //       path2D = result2D.trim();
+  //     }
+  
+  //     // If path3D is null, generate it using the Python script
+  //     if (!path3D) {
+  //       const result3D = await runPythonScript(description, path3D);
+  //       if (!result3D) {
+  //         throw new Error('No output from Python script for 3D');
+  //       }
+  //       path3D = result3D.trim();
+  //     }
+  
+  //     // Update the design
+  //     lastInsertedDesign.outputUrl2D = path2D;
+  //     lastInsertedDesign.outputUrl3D = path3D;
+  //     lastInsertedDesign.description = description;
+  
+  //     const result = await lastInsertedDesign.save();
+  //     console.log("Design edited");
+  
+  //     const transformedDesign = transformDesign(result);
+  //     return transformedDesign;
+  
+  //   } catch (error) {
+  //     throw new Error(error.message);
+  //   }
+  // },
   deleteDesign: async (args, req) => {
     if (!req.isAuth) {
       throw new Error('Unauthenticated!');
