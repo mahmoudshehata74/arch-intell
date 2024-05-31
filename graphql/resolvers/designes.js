@@ -130,7 +130,7 @@ module.exports = {
     // async function main() {
     //   try {
     //     const output = await runPythonScript(modelType, description);
-    //     // console.log("runPy output:\n", output);
+    //     console.log("runPy output:\n", output);
     //     return output;
     //   } catch (error) {
     //     console.error(error);
@@ -198,12 +198,14 @@ module.exports = {
     const lastInsertedDesign = await Design.findOne().sort({ createdAt: -1 });
     const path2D = lastInsertedDesign.outputUrl2D;
     const path3D = lastInsertedDesign.outputUrl3D;
+    const modelTupe = lastInsertedDesign.model_type;
+    
 
 
     if (path2D == null) {
       const title = lastInsertedDesign.title;
       const desc = lastInsertedDesign.description;
-      const modelTupe = lastInsertedDesign.model_type;
+      
 
 
       // const path = " 2D imge path"
@@ -238,7 +240,6 @@ module.exports = {
     if (path3D == null) {
       const title = lastInsertedDesign.title;
       const desc = lastInsertedDesign.description;
-      const modelTupe = lastInsertedDesign.model_type;
 
 
       // const path = " 2D imge path"

@@ -47,6 +47,6 @@ if __name__ == "__main__":
     model_type = sys.argv[1]
     prompt = ' '.join(sys.argv[2:])
     output = generate(model_type, prompt)
-    # print(output)  # This will print the result to stdout
+    print(len(output))  # This will print the result to stdout
 
 
