@@ -30,7 +30,7 @@ query des{
 
 
 mutation createDes{
-createDesign(designInput:{model_type:"3D",title:"a5erann",description:"lakdha wrew wr remna"}){
+createDesign(designInput:{model_type:"3D",title:"my bedroom",description:"bedroom with two Double bunk bed, Wardrobe and study desk and the walls coated with dark colors"}){
 _id
 title
 description

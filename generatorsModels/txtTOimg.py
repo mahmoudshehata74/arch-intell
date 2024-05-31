@@ -30,6 +30,7 @@ def generate(model_type,prompt):
 
     # Encode the image bytes to base64
     base64_image = base64.b64encode(img_bytes)
+    print("The length of the encoded_image is",len(base64_image))
     
     return base64_image #return image  or base64_image
 
@@ -46,6 +47,6 @@ if __name__ == "__main__":
     model_type = sys.argv[1]
     prompt = ' '.join(sys.argv[2:])
     output = generate(model_type, prompt)
-    print(output)  # This will print the result to stdout
+    # print(output)  # This will print the result to stdout
 
 

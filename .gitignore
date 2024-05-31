@@ -1,0 +1,19 @@
+generatorsModels/__pycache__/**
+generatorsModels/GENenv/**
+.vscode/**
+arch-intell/**
+arch-intell-api/**
+chatbot/**
+frontend/**
+node_modules/**
+scripts/**
+uploads/**
+arch-intell.rar
+front.html
+front.py
+arch-intell api.rar
+3D_design.png
+2D_design.png
+package-lock.json
+styles.css
+
