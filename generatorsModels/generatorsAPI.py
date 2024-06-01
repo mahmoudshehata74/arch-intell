@@ -21,6 +21,11 @@ app = Flask(__name__)
 
 # pipe2 = AutoPipelineForImage2Image.from_pretrained("stabilityai/sdxl-turbo")
 
+def decriptionValidation():
+    
+    
+    return
+
 
 @app.route('/generateDesign', methods=['POST'])
 def generateDesign():
@@ -28,6 +33,7 @@ def generateDesign():
     model_type = data['model_type']
     prompt = data['prompt']
     # print(model_type)
+    
     
     pipe = AutoPipelineForText2Image.from_pretrained("stabilityai/sdxl-turbo")  
 

@@ -37,7 +37,7 @@ def edit( prompt,base64_image):
     init_image = imag.resize(512, 512)
 
     # prompt = "colored walls"
-    image = pipe2(prompt, image=init_image, num_inference_steps=1, strength=0.85, guidance_scale=0.75).images[0]
+    image = pipe2(prompt, image=init_image, num_inference_steps=1, guidance_scale=0.75, strength=0.85).images[0]
 
     image.save("3D_design.png")
 
