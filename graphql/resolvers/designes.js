@@ -100,69 +100,28 @@ const getUsers = async (userIds) => {
 module.exports = {
 
   createDesign: async (args, req) => {
-    // if (!req.isAuth) {
-    //   throw new Error('Unauthenticated!');
-    // }
-
     const { designInput } = args;
     const description = designInput.description;
     const modelType = designInput.model_type;
 
-    // Function to execute the Python script
-    // function runPythonScript(modelType, description) {
-    //   return new Promise((resolve, reject) => {
-    //     // Escape the arguments to avoid injection issues and handle spaces correctly
-    //     const command = `python generatorsModels/txtTOimg.py "${modelType}" "${description.replace(/"/g, '\\"')}"`;
-    //     const options = { maxBuffer: 1024 * 1024 * 5 }; // 5MB buffer
-    //     exec(command, options, (error, stdout, stderr) => {
-    //       if (error) {
-    //         reject(error);
-    //       } else {
-    //         if (stderr) {
-    //           console.error(`stderr: ${stderr}`);
-    //         }
-    //         resolve(stdout);
-    //       }
-    //     });
-    //   });
-    // }
-
-    // async function main() {
-    //   try {
-    //     const output = await runPythonScript(modelType, description);
-    //     console.log("runPy output:\n", output);
-    //     return output;
-    //   } catch (error) {
-    //     console.error(error);
-    //     return null;
-    //   }
-    // }
-
-    // const result = await main();
-    // if (!result) {
-    //   throw new Error('No output from Python script');
-    // }
-    // const trimmedOutput = result.trim();
-
-    const response = await axios.post('http://localhost:5000/generateDesign', {
+    try {
+      const response = await axios.post('https://eb69-34-87-57-59.ngrok-free.app/generateDesign', {
         model_type: modelType,
         prompt: description,
       });
 
-      // Get the generated 3D output URL from the Flask server response
       const outputFromFlaskServer = response.data.image;
 
-    const design = new Design({
-      title: designInput.title,
-      description: designInput.description,
-      creator: req.userId,
-      createdAt: new Date().toISOString(),
-      model_type: designInput.model_type,
-      outputUrl2D: modelType === "2D" ? outputFromFlaskServer : null,   
-      outputUrl3D: modelType === "3D" ? outputFromFlaskServer : null,
-    });
+      const design = new Design({
+        title: designInput.title,
+        description: designInput.description,
+        creator: req.userId,
+        createdAt: new Date().toISOString(),
+        model_type: designInput.model_type,
+        outputUrl2D: modelType === "2D" ? outputFromFlaskServer : null,
+        outputUrl3D: modelType === "3D" ? outputFromFlaskServer : null,
+      });
 
-    try {
       const results = await design.save();
       console.log(`Design created by: ${req.username}`);
 
@@ -179,8 +138,8 @@ module.exports = {
       return createdDesigns;
 
     } catch (err) {
-      console.log(err);
-      throw err;
+      console.error(err);
+      throw new Error('Error creating design');
     }
   }
 
@@ -189,170 +148,52 @@ module.exports = {
     // if (!req.isAuth) {
     //   throw new Error('Unauthenticated!');
     // }
-    
-    // const lastInsertedDesign = await User.findById(req.userId, 'createdDesigns')
-        // .sort({ createdAt: -1 })
-        // .limit(1)
-        // .populate('createdDesigns');
 
-    const lastInsertedDesign = await Design.findOne().sort({ createdAt: -1 });
-    const path2D = lastInsertedDesign.outputUrl2D;
-    const path3D = lastInsertedDesign.outputUrl3D;
-    const modelTupe = lastInsertedDesign.model_type;
-    
+    try {
+      const lastInsertedDesign = await Design.findOne().sort({ createdAt: -1 });
+      if (!lastInsertedDesign) {
+        throw new Error('No design found.');
+      }
 
-
-    if (path2D == null) {
+      const path2D = lastInsertedDesign.outputUrl2D;
+      const path3D = lastInsertedDesign.outputUrl3D;
+      const modelType = lastInsertedDesign.model_type;
       const title = lastInsertedDesign.title;
-      const desc = lastInsertedDesign.description;
-      
 
+      let response;
+      let outputFromFlaskServer;
 
-      // const path = " 2D imge path"
-      console.log("The length of the encoded_image is:", path3D.length);
+      if (path2D == null && path3D != null) {
+        response = await axios.post('https://9900-34-87-57-59.ngrok-free.app/editDesign', {
+          prompt: description,
+          path: path3D,
+        });
+        outputFromFlaskServer = response.data.image;
+        lastInsertedDesign.outputUrl3D = outputFromFlaskServer;
+      } else if (path3D == null && path2D != null) {
+        response = await axios.post('https://9900-34-87-57-59.ngrok-free.app/editDesign', {
+          prompt: description,
+          path: path2D,
+        });
+        outputFromFlaskServer = response.data.image;
+        lastInsertedDesign.outputUrl2D = outputFromFlaskServer;
+      } else {
+        throw new Error('Both 2D and 3D paths are null or both are not null.');
+      }
 
+      lastInsertedDesign.description = description;
+      await lastInsertedDesign.save();
+      console.log("Design edited");
 
-      const response = await axios.post('http://localhost:5000/editDesign', {
-        prompt: description,
-        path: path3D,
-      });
-
-      // Get the generated 3D output URL from the Flask server response
-      const outputFromFlaskServer = response.data.image;
-
-
-      const design = new Design({
-        title: title,
-        description: description,
-        outputUrl2D: path2D,
-        outputUrl3D: outputFromFlaskServer,
-        model_type: modelTupe
-      });
-
-      const result = await design.save();
-      console.log("design edited");
-
-      createdDesigns = transformDesign(result);
+      const createdDesigns = transformDesign(lastInsertedDesign);
       return createdDesigns;
 
-
+    } catch (err) {
+      console.error(err);
+      throw new Error('Error editing design');
     }
-    if (path3D == null) {
-      const title = lastInsertedDesign.title;
-      const desc = lastInsertedDesign.description;
-
-
-      // const path = " 2D imge path"
-      console.log("The length of the encoded_image is:", path2D.length);
-
-      const response = await axios.post('http://localhost:5000/editDesign', {
-        prompt: description,
-        path: path2D,
-      });
-      // Get the generated 3D output URL from the Flask server response
-      const outputFromFlaskServer = response.data.image;
-
-
-      const design = new Design({
-        title: title,
-        description: description,
-        outputUrl2D: outputFromFlaskServer,
-        outputUrl3D: path3D,
-        model_type: modelTupe
-      });
-
-      const result = await design.save();
-      console.log("design edited");
-
-      createdDesigns = transformDesign(result);
-      return createdDesigns;
-    }
-
-  },
-
-
-
-  // editDesign : async ({ req, userId, description }) => {
-  //   // Uncomment the following lines if authentication is needed
-  //   // if (!req.isAuth) {
-  //   //   throw new Error('Unauthenticated!');
-  //   // }
-
-  //   try {
-  //     // Find the user by ID and populate their createdDesigns
-  //     const user = await User.findById(userId).populate({
-  //       path: 'createdDesigns',
-  //       options: {
-  //         sort: { createdAt: -1 }, // Sort by creation date in descending order
-  //         limit: 1, // We only need the most recent design
-  //       }
-  //     });
-
-  //     if (!user) {
-  //       throw new Error('User not found');
-  //     }
-
-  //     if (user.createdDesigns.length === 0) {
-  //       throw new Error('No designs found for this user');
-  //     }
-
-  //     // Get the most recent design
-  //     const lastInsertedDesign = user.createdDesigns[0];
-  //     let path2D = lastInsertedDesign.outputUrl3D;
-  //     let path3D = lastInsertedDesign.outputUrl2D;
-
-  //     const title = lastInsertedDesign.title;
-  //     const desc = lastInsertedDesign.description;
-
-  //     // Helper function to run a Python script
-  //     function runPythonScript(description, outputPath) {
-  //       return new Promise((resolve, reject) => {
-  //         const command = `python generatorsModels/imgTOimg.py "${description}" "${outputPath}"`;
-  //         const options = { maxBuffer: 1024 * 1024 * 5 }; // 5MB buffer
-
-  //         exec(command, options, (error, stdout, stderr) => {
-  //           if (error) {
-  //             reject(error);
-  //           } else {
-  //             resolve(stdout);
-  //           }
-  //         });
-  //       });
-  //     }
-
-  //     // If path2D is null, generate it using the Python script
-  //     if (!path2D) {
-  //       const result2D = await runPythonScript(description, path2D);
-  //       if (!result2D) {
-  //         throw new Error('No output from Python script for 2D');
-  //       }
-  //       path2D = result2D.trim();
-  //     }
-
-  //     // If path3D is null, generate it using the Python script
-  //     if (!path3D) {
-  //       const result3D = await runPythonScript(description, path3D);
-  //       if (!result3D) {
-  //         throw new Error('No output from Python script for 3D');
-  //       }
-  //       path3D = result3D.trim();
-  //     }
-
-  //     // Update the design
-  //     lastInsertedDesign.outputUrl2D = path2D;
-  //     lastInsertedDesign.outputUrl3D = path3D;
-  //     lastInsertedDesign.description = description;
-
-  //     const result = await lastInsertedDesign.save();
-  //     console.log("Design edited");
-
-  //     const transformedDesign = transformDesign(result);
-  //     return transformedDesign;
-
-  //   } catch (error) {
-  //     throw new Error(error.message);
-  //   }
-  // },
+  }
+,
   deleteDesign: async (args, req) => {
     if (!req.isAuth) {
       throw new Error('Unauthenticated!');

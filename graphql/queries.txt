@@ -59,6 +59,38 @@ createdAt
 }
 }
 
+
+mutation editDesign{
+  editDesign(description: "rooo"){
+        _id
+    title
+    description
+    model_type
+    outputUrl2D
+    outputUrl3D
+    creator {
+      _id
+      username
+      email
+      image
+    }
+    comments {
+      _id
+      comment
+      username
+      createdAt
+    }
+    likes {
+      id
+      createdAt
+      username
+    }
+    createdAt
+  }
+}
+
+
+
 query searchDesignTitle{
   searchDesignTitle(title:"hoo"){
     _id
@@ -189,35 +221,6 @@ mutation createUser{
     _id
     username
     email
-  }
-}
-
-mutation editDesign{
-  editDesign(description: "rooo"){
-        _id
-    title
-    description
-    model_type
-    outputUrl2D
-    outputUrl3D
-    creator {
-      _id
-      username
-      email
-      image
-    }
-    comments {
-      _id
-      comment
-      username
-      createdAt
-    }
-    likes {
-      id
-      createdAt
-      username
-    }
-    createdAt
   }
 }
 

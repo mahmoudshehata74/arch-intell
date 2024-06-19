@@ -1,3 +1,18 @@
+# from flask import Flask, render_template, request
+# from google.colab.output import eval_js
+
+# print(eval_js("google.colab.kernel.proxyPort(5000)"))
+
+# app = Flask(__name__ , template_folder='/content')
+
+# @app.route("/")
+# def home():
+#   return render_template("index.html")
+
+# if __name__ == "__main__":
+#   app.run()
+
+
 from flask import Flask, request, jsonify
 from diffusers import AutoPipelineForText2Image , AutoPipelineForImage2Image 
 from diffusers.utils import load_image
@@ -13,6 +28,7 @@ import numpy as np
 import cv2
 from generatorsFunctions import edit
 from generatorsFunctions import generate
+import re
 
 
 app = Flask(__name__)
@@ -21,10 +37,28 @@ app = Flask(__name__)
 
 # pipe2 = AutoPipelineForImage2Image.from_pretrained("stabilityai/sdxl-turbo")
 
-def decriptionValidation():
-    
-    
-    return
+
+home_design_pattern = r"""^[a-zA-Z0-9\s]*\b(home|house|interior|exterior)(?:[a-zA-Z0-9\s]*\b
+                (room|kitchen|bathroom|bedroom|living|Designe|dining|new|my|the|and|of|office)){2,4}\b[a-zA-Z0-9\s]*$"""
+
+def validate_description(prompt):
+    match = re.match(home_design_pattern, prompt)
+    if match:
+        room_mentions = match.groups()[1::2]
+        room_count = len(room_mentions)
+        if room_count >= 2 and room_count <= 4 and all(room_mentions[i] != room_mentions[i+1] for i in range(len(room_mentions)-1)):
+            return True
+        else:
+            raise ValueError("Invalid home design input: number of rooms must be between 2 and 4, and there must be no repeated room types.")
+    else:
+        # Check for other home design keywords
+        other_pattern = r"^[a-zA-Z0-9\s]*\b(room|kitchen|bathroom|bedroom|living|Designe|dining|new|my|the|and|of|office|home|house|interior|exterior|patio|deck|garden|landscaping)\b[a-zA-Z0-9\s]*$"
+        if re.match(other_pattern, prompt):
+            return True
+        else:
+            raise ValueError("Invalid home design input: the input must contain at least one of the following keywords: home, house, interior, exterior, patio, deck, garden, landscaping.")
+
+input_text = "Designe the living room, kitchen, and bedroom of my new home"
 
 
 @app.route('/generateDesign', methods=['POST'])
@@ -34,16 +68,17 @@ def generateDesign():
     prompt = data['prompt']
     # print(model_type)
     
-    
     pipe = AutoPipelineForText2Image.from_pretrained("stabilityai/sdxl-turbo")  
+    
 
     try:
-        
+
         model_type = model_type+" floorplan design"
         # negative_prompt="ugly, deformed, disfigured, poor details, bad anatomy, null"
 
-        image = pipe(model_type + prompt, num_inference_steps=3,guidance_scale=0.75).images[0]
+        # if validate_description(prompt):
 
+        image = pipe(model_type + prompt, num_inference_steps=2, guidance_scale=0.85).images[0]
         image.save("2D_design.png")
 
         # Convert the PIL image to bytes
@@ -53,15 +88,17 @@ def generateDesign():
 
         # Encode the image bytes to base64
         base64_image = base64.b64encode(img_bytes)
-        print("The length of the encoded_image is",len(base64_image))
+        print("The length of the encoded_image is", len(base64_image))
 
         return jsonify({'image': base64_image.decode('utf-8')})
-
+    except ValueError  as e:
+        app.logger.error(f"Invalid home design input: {str(e)}")
+        return jsonify({'error': str(e)}), 400
     except Exception as e:
         app.logger.error(f"Error generating image: {str(e)}")
         return jsonify({'error': 'Error generating image'}), 500
-
-
+    
+    
 @app.route('/editDesign', methods=['POST'])
 def editDesign():
     pipe2 = AutoPipelineForImage2Image.from_pretrained("stabilityai/sdxl-turbo")
@@ -88,7 +125,7 @@ def editDesign():
         
         # init_image = img.resize((512, 512))
 
-        image = pipe2(description, image=init_image, num_inference_steps=3, strength=1, guidance_scale=75).images[0]
+        image = pipe2(description, image=init_image, num_inference_steps=3, strength=1, guidance_scale=0.9).images[0]
 
         image.save("3D_design.png")
 
