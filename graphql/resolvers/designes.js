@@ -105,7 +105,7 @@ module.exports = {
     const modelType = designInput.model_type;
 
     try {
-      const response = await axios.post('https://eb69-34-87-57-59.ngrok-free.app/generateDesign', {
+      const response = await axios.post('https://3913-34-87-69-124.ngrok-free.app/generateDesign', {
         model_type: modelType,
         prompt: description,
       });

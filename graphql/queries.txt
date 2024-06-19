@@ -7,10 +7,8 @@ query des{
     outputUrl2D
     outputUrl3D
     creator {
-      _id
-      username
-      email
-      image
+        _id
+    }
     comments {
       _id
       comment
@@ -23,10 +21,9 @@ query des{
       username
     }
     createdAt
-
+    }
   }
-}
-}
+
 
 
 mutation createDes{
@@ -39,9 +36,6 @@ outputUrl2D
 outputUrl3D
 creator {
 _id
-username
-email
-image
 }
 comments {
 _id
@@ -70,9 +64,6 @@ mutation editDesign{
     outputUrl3D
     creator {
       _id
-      username
-      email
-      image
     }
     comments {
       _id
@@ -128,9 +119,6 @@ query searchDesignId{
     outputUrl3D
     creator {
       _id
-      username
-      email
-      image
     }
     comments {
       _id
@@ -158,9 +146,6 @@ query {
     outputUrl3D
     creator {
       _id
-      username
-      email
-      image
     }
     comments {
       _id
