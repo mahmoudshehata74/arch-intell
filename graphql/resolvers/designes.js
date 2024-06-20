@@ -144,13 +144,14 @@ module.exports = {
   }
 
   ,
-  editDesign: async ({ req, description }) => {
+  editDesign: async ({ req, designID, description}) => {
     // if (!req.isAuth) {
     //   throw new Error('Unauthenticated!');
     // }
-
+    // designID = args.designID
+    // description = args.description
     try {
-      const lastInsertedDesign = await Design.findOne().sort({ createdAt: -1 });
+      const lastInsertedDesign = await Design.findById(designID);
       if (!lastInsertedDesign) {
         throw new Error('No design found.');
       }
@@ -164,14 +165,14 @@ module.exports = {
       let outputFromFlaskServer;
 
       if (path2D == null && path3D != null) {
-        response = await axios.post('https://9900-34-87-57-59.ngrok-free.app/editDesign', {
+        response = await axios.post('https://874c-34-105-6-248.ngrok-free.app/editDesign', {
           prompt: description,
           path: path3D,
         });
         outputFromFlaskServer = response.data.image;
         lastInsertedDesign.outputUrl3D = outputFromFlaskServer;
       } else if (path3D == null && path2D != null) {
-        response = await axios.post('https://9900-34-87-57-59.ngrok-free.app/editDesign', {
+        response = await axios.post('https://874c-34-105-6-248.ngrok-free.app/editDesign', {
           prompt: description,
           path: path2D,
         });

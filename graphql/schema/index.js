@@ -83,7 +83,7 @@ type RootQuery {
 type RootMutation {
     createDesign(designInput: DesignInput): Design!
     deletDesign(designId: String!): Design!
-    editDesign(description: String!): Design!
+    editDesign(designID:ID, description: String!): Design!
     likeDesign(designId: ID!): Design!
     unLikeDesign(designId:ID!): Design!
     addComment(designId: ID!, comment: String!): Design!

@@ -64,6 +64,9 @@ mutation editDesign{
     outputUrl3D
     creator {
       _id
+      username
+      email
+      image
     }
     comments {
       _id
@@ -119,6 +122,9 @@ query searchDesignId{
     outputUrl3D
     creator {
       _id
+      username
+      email
+      image
     }
     comments {
       _id
@@ -146,6 +152,9 @@ query {
     outputUrl3D
     creator {
       _id
+      username
+      email
+      image
     }
     comments {
       _id
