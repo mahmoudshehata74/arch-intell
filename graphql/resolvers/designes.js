@@ -105,7 +105,7 @@ module.exports = {
     const modelType = designInput.model_type;
 
     try {
-      const response = await axios.post('https://3913-34-87-69-124.ngrok-free.app/generateDesign', {
+      const response = await axios.post('https://c553-104-196-239-71.ngrok-free.app/generateDesign', {
         model_type: modelType,
         prompt: description,
       });
@@ -209,7 +209,8 @@ module.exports = {
       if (!deletedDesign) {
         throw new Error("Design not found or already deleted!");
       }
-      await deletedDesign.save();
+      // await deletedDesign.save();
+      console.log(`Design deleted by: ${req.username}`);
       return transformDesign(deletedDesign);
     } catch (err) {
       throw err;
@@ -276,9 +277,12 @@ module.exports = {
     //   throw new Error('Unauthenticated!');
     // }
     try {
-      const designs = await Design.find();
-      return designs;
+      const designs = await Design.find().sort({ createdAt: -1 });
+      // console.log('Fetched designs:', designs);
+      const transformedDesigns = designs.map(transformDesign);
+      return transformedDesigns;
     } catch (error) {
+      console.error('Error fetching designs:', error); // Log the error
       throw new Error('Failed to fetch designs');
     }
   },
@@ -323,7 +327,10 @@ module.exports = {
     // }
 
     try {
-      const user = await User.findById(userId).populate('createdDesigns');
+      const user = await User.findById(userId).populate({
+        path: 'createdDesigns',
+        options: { sort: { createdAt: -1 } }
+      });
       if (!user) {
         throw new Error('User not found');
       }

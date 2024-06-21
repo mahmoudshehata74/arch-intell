@@ -267,12 +267,28 @@ module.exports = {
       throw new Error('Failed to fetch users');
     }
   },
-  searchUser: async ({ userName, req }) => {
+  searchUserName: async ({ userName, req }) => {
     // if (!req.isAuth) {
     //   throw new Error('Unauthenticated!');
     // }
     try {
       const user = await User.findOne({ username: userName });
+      // const design = await Design.findById( "65d15c03a0ce078bfac76081" );
+      // designData = transformDesign(design)
+      const result = { user };
+
+      return user;
+    } catch (error) {
+      throw new Error(error);
+
+    }
+  },
+  searchUserID: async ({ userID, req }) => {
+    // if (!req.isAuth) {
+    //   throw new Error('Unauthenticated!');
+    // }
+    try {
+      const user = await User.findById(userID);
       // const design = await Design.findById( "65d15c03a0ce078bfac76081" );
       // designData = transformDesign(design)
       const result = { user };

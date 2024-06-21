@@ -113,7 +113,7 @@ query searchDesignTitle{
 }
 
 query searchDesignId{
-  searchDesignId(designId:"65d3a90e7844ed3f154ea3bb"){
+  searchDesignId(designId:"6674c9a088fe9d320c742373"){
     _id
     title
     description
@@ -173,7 +173,7 @@ query {
 }
 
 
-mutation deletDesign{
+mutation deleteDesign{
   deletDesign(designId:"65d15c03a0ce078bfac76081"){
       _id
     title
@@ -348,8 +348,26 @@ mutation deleteComment {
   }
 }
 
-query searchUser {
-  searchUser(userName:"saleh") {
+query searchUserName {
+  searchUserName(userName:"saleh") {
+    _id
+    username  
+    email
+    createdDesigns{
+      _id
+    }
+    image
+    followings{
+      _id
+    }
+    followers {
+      _id
+    }
+  }
+}
+
+query searchUserID {
+  searchUserID(userID:"65d242196a5215d273d503e9") {
     _id
     username  
     email

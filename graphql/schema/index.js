@@ -74,7 +74,8 @@ type RootQuery {
     searchDesignId(designId:ID!): Design!
     createdDesigns(userId:ID!): [Design!]!
     users: [User!]!
-    searchUser(userName: String!): User!
+    searchUserName(userName: String!): User!
+    searchUserID(userID: ID!): User!
     login(email: String!, password: String!): AuthData!
     followers(userID: ID!):[User!]
     followings(userID: ID!):[User!]
@@ -82,7 +83,7 @@ type RootQuery {
 
 type RootMutation {
     createDesign(designInput: DesignInput): Design!
-    deletDesign(designId: String!): Design!
+    deleteDesign(designId: ID!): Design!
     editDesign(designID:ID, description: String!): Design!
     likeDesign(designId: ID!): Design!
     unLikeDesign(designId:ID!): Design!
