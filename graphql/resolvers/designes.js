@@ -144,57 +144,138 @@ module.exports = {
   }
 
   ,
-  editDesign: async ({ req, designID, description}) => {
+  editDesign: async ({ req, designID,description }) => {
     // if (!req.isAuth) {
     //   throw new Error('Unauthenticated!');
     // }
-    // designID = args.designID
-    // description = args.description
-    try {
-      const lastInsertedDesign = await Design.findById(designID);
-      if (!lastInsertedDesign) {
-        throw new Error('No design found.');
-      }
+    
+    // const lastInsertedDesign = await User.findById(req.userId, 'createdDesigns')
+        // .sort({ createdAt: -1 })
+        // .limit(1)
+        // .populate('createdDesigns');
 
-      const path2D = lastInsertedDesign.outputUrl2D;
-      const path3D = lastInsertedDesign.outputUrl3D;
-      const modelType = lastInsertedDesign.model_type;
+    const lastInsertedDesign = await Design.findById(designID);
+    const path2D = lastInsertedDesign.outputUrl2D;
+    const path3D = lastInsertedDesign.outputUrl3D;
+    const modelTupe = lastInsertedDesign.model_type;
+    
+
+
+    if (path2D == null) {
       const title = lastInsertedDesign.title;
+      const desc = lastInsertedDesign.description;
+      
 
-      let response;
-      let outputFromFlaskServer;
 
-      if (path2D == null && path3D != null) {
-        response = await axios.post('https://874c-34-105-6-248.ngrok-free.app/editDesign', {
-          prompt: description,
-          path: path3D,
-        });
-        outputFromFlaskServer = response.data.image;
-        lastInsertedDesign.outputUrl3D = outputFromFlaskServer;
-      } else if (path3D == null && path2D != null) {
-        response = await axios.post('https://874c-34-105-6-248.ngrok-free.app/editDesign', {
-          prompt: description,
-          path: path2D,
-        });
-        outputFromFlaskServer = response.data.image;
-        lastInsertedDesign.outputUrl2D = outputFromFlaskServer;
-      } else {
-        throw new Error('Both 2D and 3D paths are null or both are not null.');
-      }
+      // const path = " 2D imge path"
+      console.log("The length of the encoded_image is:", path3D.length);
 
-      lastInsertedDesign.description = description;
-      await lastInsertedDesign.save();
-      console.log("Design edited");
 
-      const createdDesigns = transformDesign(lastInsertedDesign);
+      const response = await axios.post('https://0831-34-124-156-108.ngrok-free.app/editDesign', {
+        prompt: description,
+        path: path3D,
+      });
+
+      // Get the generated 3D output URL from the Flask server response
+      const outputFromFlaskServer = response.data.image;
+
+
+      const design = new Design({
+        title: title,
+        description: description,
+        outputUrl2D: path2D,
+        outputUrl3D: outputFromFlaskServer,
+        model_type: modelTupe
+      });
+
+      const result = await design.save();
+      console.log("design edited");
+
+      createdDesigns = transformDesign(result);
       return createdDesigns;
-
-    } catch (err) {
-      console.error(err);
-      throw new Error('Error editing design');
     }
-  }
-,
+    if (path3D == null) {
+      const title = lastInsertedDesign.title;
+      const desc = lastInsertedDesign.description;
+
+      // const path = " 2D imge path"
+      console.log("The length of the encoded_image is:", path2D.length);
+
+      const response = await axios.post('https://0831-34-124-156-108.ngrok-free.app/editDesign', {
+        prompt: description,
+        path: path2D,
+      });
+      // Get the generated 3D output URL from the Flask server response
+      const outputFromFlaskServer = response.data.image;
+
+
+      const design = new Design({
+        title: title,
+        description: description,
+        outputUrl2D: outputFromFlaskServer,
+        outputUrl3D: path3D,
+        model_type: modelTupe
+      });
+
+      const result = await design.save();
+      console.log("design edited");
+
+      createdDesigns = transformDesign(result);
+      return createdDesigns;
+    }
+
+  },
+  // editDesign: async ({ req, designID, description}) => {
+  //   // if (!req.isAuth) {
+  //   //   throw new Error('Unauthenticated!');
+  //   // }
+  //   // designID = args.designID
+  //   // description = args.description
+  //   try {
+  //     const lastInsertedDesign = await Design.findById(designID);
+  //     if (!lastInsertedDesign) {
+  //       throw new Error('No design found.');
+  //     }
+
+  //     const path2D = lastInsertedDesign.outputUrl2D;
+  //     const path3D = lastInsertedDesign.outputUrl3D;
+  //     const modelType = lastInsertedDesign.model_type;
+  //     const title = lastInsertedDesign.title;
+
+  //     let response;
+  //     let outputFromFlaskServer;
+
+  //     if (path2D == null && path3D != null) {
+  //       response = await axios.post('https://874c-34-105-6-248.ngrok-free.app/editDesign', {
+  //         prompt: description,
+  //         path: path3D,
+  //       });
+  //       outputFromFlaskServer = response.data.image;
+  //       lastInsertedDesign.outputUrl3D = outputFromFlaskServer;
+  //     } else if (path3D == null && path2D != null) {
+  //       response = await axios.post('https://874c-34-105-6-248.ngrok-free.app/editDesign', {
+  //         prompt: description,
+  //         path: path2D,
+  //       });
+  //       outputFromFlaskServer = response.data.image;
+  //       lastInsertedDesign.outputUrl2D = outputFromFlaskServer;
+  //     } else {
+  //       throw new Error('Both 2D and 3D paths are null or both are not null.');
+  //     }
+
+  //     lastInsertedDesign.description = description;
+  //     await lastInsertedDesign.save();
+  //     console.log("Design edited");
+
+  //     const createdDesigns = transformDesign(lastInsertedDesign);
+  //     return createdDesigns;
+
+  //   } catch (err) {
+  //     console.error(err);
+  //     throw new Error('Error editing design');
+  //   }
+  // }
+
   deleteDesign: async (args, req) => {
     if (!req.isAuth) {
       throw new Error('Unauthenticated!');
@@ -220,16 +301,29 @@ module.exports = {
     if (!req.isAuth) {
       throw new Error('Unauthenticated!');
     }
+    
     const { designId } = args;
+    const { username } = req;
+    const { userId } = req;
+  
     try {
       const design = await Design.findById(designId);
-      design.likes.push({ username: req.username, createdAt: new Date().toISOString() });
+      
+      // Check if the user has already liked this design
+      if (design.likes.some(like => like.username === username)) {
+        throw new Error('You have already liked this design');
+      }
+      
+      // If not liked before, add the like
+      design.likes.push({ username, createdAt: new Date().toISOString() });
       await design.save();
+  
       return transformDesign(design);
     } catch (err) {
       throw err;
     }
-  },
+  }
+  ,
   unLikeDesign: async (args, req) => {
     if (!req.isAuth) {
       throw new Error('Unauthenticated!');
@@ -272,6 +366,20 @@ module.exports = {
       throw err;
     }
   },
+  comments: async (args) => {
+    const { designId } = args;
+    try {
+      const design = await Design.findById(designId);
+      if (!design) {
+        throw new Error('Design not found');
+      }
+      return design.comments; // Return all comments for the design
+    } catch (err) {
+      throw err;
+    }
+  }
+,
+
   designs: async (req) => {
     // if (!req.isAuth) {
     //   throw new Error('Unauthenticated!');

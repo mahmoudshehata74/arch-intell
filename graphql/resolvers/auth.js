@@ -222,7 +222,7 @@ module.exports = {
       user.image = "http://localhost:9595/uploads/"+photo;
       // const image = user.image.map(transformUser);
 
-
+      
       await user.save();
 
       return transformUser(user);
@@ -299,6 +299,24 @@ module.exports = {
 
     }
   },
+
+  isFollow: async (args, req) => {
+    const { userToFollowId } = args;
+    try {
+      const userToFollow = await User.findById(userToFollowId);
+      const currentUser = await User.findById(req.userId);
+
+      if (!userToFollow || !currentUser) {
+        throw new Error('User not found');
+      }
+
+      let isFollow = currentUser.followings.map(String).includes(userToFollow._id.toString());
+      return isFollow;
+    } catch (err) {
+      throw err;
+    }
+  },
+
   followUser: async (args, req) => {
     // if (!req.isAuth) {
     //   throw new Error('Unauthenticated!');

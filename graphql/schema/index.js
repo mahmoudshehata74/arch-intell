@@ -79,6 +79,8 @@ type RootQuery {
     login(email: String!, password: String!): AuthData!
     followers(userID: ID!):[User!]
     followings(userID: ID!):[User!]
+    comments(designId:ID!): [Comment]
+    isFollow(userToFollowId: ID!): Boolean!
 }
 
 type RootMutation {

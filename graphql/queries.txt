@@ -55,7 +55,7 @@ createdAt
 
 
 mutation editDesign{
-  editDesign(description: "rooo"){
+  editDesign(designID:"66733882eadaa5ca77a8da8d",description: "rooo"){
         _id
     title
     description
@@ -232,10 +232,13 @@ mutation uploadProfilePhoto{
   }
 }
 
+query {
+  isFollow(userToFollowId: "65e3f90918d7e90709bc5a4f")
+}
 
 mutation follow
 {
-  followUser(userId:"65d3a90e7844ed3f154ea3bb"){
+  followUser(userId:"65e3f90918d7e90709bc5a4f"){
     _id
     username
     email
@@ -261,7 +264,7 @@ mutation unfollow
 }
 
 query followers{
-  followers(userID:"65d242196a5215d273d503e9"){
+  followers(userID:"6635476072870ab3c3cec8b0"){
     _id
     username
     email
@@ -347,6 +350,15 @@ mutation deleteComment {
       }
   }
 }
+
+query {
+  comments(designId: "667380edaa089febe875dcef") {
+    comment
+    username
+    createdAt
+  }
+}
+
 
 query searchUserName {
   searchUserName(userName:"saleh") {
