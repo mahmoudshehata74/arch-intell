@@ -25,4 +25,18 @@ Users can generate 2D floor plans, convert them into interactive 3D designs, and
 
 ---
 
-## 📂 Project Structure
+
+## ⚙️ Installation & Run
+
+```bash
+git clone https://github.com/username/arch-intell.git
+cd arch-intell
+npm install
+npm start
+```
+---
+
+## Project Privacy
+- Projects can be saved as Public or Private.
+- Only public projects are searchable by other users.
+
